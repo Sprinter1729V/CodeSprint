@@ -11,7 +11,6 @@ type ProblemPageProps = {
 
 const ProblemPage: React.FC<ProblemPageProps> = ({ problem }) => {
 	const hasMounted = useHasMounted();
-
 	if (!hasMounted) return null;
 
 	return (
@@ -21,12 +20,13 @@ const ProblemPage: React.FC<ProblemPageProps> = ({ problem }) => {
 		</div>
 	);
 };
+
 export default ProblemPage;
 
-// fetch the local data
-//  SSG
-// getStaticPaths => it create the dynamic routes
+// Fetch local data with SSG
 export async function getStaticPaths() {
+	console.log("Problems Object:", problems); // Debugging
+
 	const paths = Object.keys(problems).map((key) => ({
 		params: { pid: key },
 	}));
@@ -37,21 +37,26 @@ export async function getStaticPaths() {
 	};
 }
 
-// getStaticProps => it fetch the data
-
 export async function getStaticProps({ params }: { params: { pid: string } }) {
 	const { pid } = params;
+	console.log("Fetching problem for pid:", pid); // Debugging
+
 	const problem = problems[pid];
 
 	if (!problem) {
-		return {
-			notFound: true,
-		};
+		console.error(`Problem not found for pid: ${pid}`);
+		return { notFound: true };
 	}
-	problem.handlerFunction = problem.handlerFunction.toString();
+
+	// Convert handlerFunction safely
+	const problemData = { 
+		...problem, 
+		handlerFunction: problem.handlerFunction ? problem.handlerFunction.toString() : null
+	};
+
 	return {
 		props: {
-			problem,
+			problem: problemData,
 		},
 	};
 }
